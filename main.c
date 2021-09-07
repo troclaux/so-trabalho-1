@@ -377,18 +377,18 @@ void round_robin(unsigned quantum, unsigned quantidade_processos)
         printf("Processos concluidos: %d\n", qtd_processos_finalizados);
     }
 }
-void imprime_tabela_processos(int qtd)
-{
-    printf("--------------------------------------------------------------------------------\n");
-    printf("| PID | Prioridade | Tempo de Inicio | Duraçao |  IO  | Inicio IO | Duracao IO |\n");
-    printf("--------------------------------------------------------------------------------\n");
+void imprime_tabela_processos(int qtd){
+
     int i = 0;
-    for (i = 0; i < qtd; i++)
-    {
+    for (i = 0; i < qtd; i++){
         Processo _p = lista_processos[i];
-        printf("|  %d  |      %d     |        %d        |    %d    |   %c  |     %d     |    %d     |\n",
-               _p.pid, _p.prioridade, _p.inicio, _p.duracao, _p.io.tipo, _p.io.inicio, _p.io.duracao);
-        printf("--------------------------------------------------------------------------------\n");
+        printf("PID %d \n", _p.pid);
+        printf("Prioridade: %d \n", _p.prioridade);
+        printf("Início: %d \n", _p.inicio);
+        printf("Duração: %d \n", _p.duracao);
+        printf("Tipo de IO: %c \n", _p.io.tipo);
+        printf("Início IO: %d \n", _p.io.inicio);
+        printf("Duração IO: %d \n", _p.io.duracao);
     }
 }
 
