@@ -44,16 +44,13 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
     process->end = 0;
 
     int *checkRepeated = (int*)malloc(sizeof(int)*6);
-    int indice = 0;
-
-    int i;
-    int j;
+    int index = 0;
     int random;
     int flag = 0; 
 
-    for (i = 0; i < process->diskNumber; i++) {
+    for (int i = 0; i < process->diskNumber; i++) {
         random = 2 + (rand() % (process->service - 2));
-        for (j = 0; j < indice; j++) {
+        for (int j = 0; j < index; j++) {
             if (random == checkRepeated[j]) {
                 flag = 1;
                 i--;
@@ -62,14 +59,14 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
         }
         if (flag == 0) {
             process->diskRequests[i] = random;
-            checkRepeated[indice++] = random;
+            checkRepeated[index++] = random;
         }
         flag = 0;
     }
 
-    for (i = 0; i < process->tapeNumber; i++) {
+    for (int i = 0; i < process->tapeNumber; i++) {
         random = 2 + (rand() % (process->service - 2));
-        for (j = 0; j < indice; j++) {
+        for (int j = 0; j < index; j++) {
             if (random == checkRepeated[j]) {
                 flag = 1;
                 i--;
@@ -78,14 +75,14 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
         }
         if (flag == 0) {
             process->tapeRequests[i] = random;
-            checkRepeated[indice++] = random;
+            checkRepeated[index++] = random;
         }
         flag = 0;
     }
 
-    for (i = 0; i < process->printerNumber; i++) {
+    for (int i = 0; i < process->printerNumber; i++) {
         random = 2 +(rand() % (process->service - 2));
-        for (j = 0; j < indice; j++) {
+        for (int j = 0; j < index; j++) {
             if (random == checkRepeated[j]) {
                 flag = 1;
                 i--;
@@ -94,7 +91,7 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
         }
         if (flag == 0) {
             process->printerRequests[i] = random;
-            checkRepeated[indice++] = random;
+            checkRepeated[index++] = random;
         }
         flag = 0;
     }
@@ -104,14 +101,10 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
 void printProcesses(Process process[], int totalProcesses) {
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
     init_pair(2, COLOR_WHITE, COLOR_BLACK);
-    init_pair(3, COLOR_WHITE, COLOR_BLACK);
     attron(COLOR_PAIR(1));
-    printw ("Numero de processos: %d\n", totalProcesses);
+    printw ("PID\tPPID\tPriority\tStart\tEnd\tStatus\tPC\tService\t\tDisk\t\tTape\t\tPrinter\n");
     attron(COLOR_PAIR(2));
-    printw ("PID\tPPID\tPrioridade\tInicio\tFim\tStatus\tPC\tServico\t\tDisco\t\tFita\t\tImpressora\n");
-    attron(COLOR_PAIR(3));
-    int i;
-    for (i = 0; i < totalProcesses; i++) {
+    for (int i = 0; i < totalProcesses; i++) {
         printw ("%d\t", process[i].pid);
         printw ("%d\t", process[i].ppid);
         printw ("%d\t\t", process[i].priority);
@@ -144,10 +137,9 @@ void printProcesses(Process process[], int totalProcesses) {
         printw ("\n");
     }
 }
-int getProcessByPID (Process* processos, int PID) {
-    int i;
-    for (i = 0; i< MAX_PROCESS_NUMBER; i++) {
-        if (processos[i].pid == PID) {
+int getProcessByPID (Process* processes, int PID) {
+    for (int i = 0; i< MAX_PROCESS_NUMBER; i++) {
+        if (processes[i].pid == PID) {
             return i;
         }
     }

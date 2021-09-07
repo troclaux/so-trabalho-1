@@ -11,7 +11,6 @@ typedef struct scheduler {
     int processingPID;
     int processorTime;
     int quantumTime;
-
     queue disk;
     int diskTime;
     int totalDiskTime;    
@@ -38,7 +37,6 @@ void startScheduler (Scheduler* scheduler, int max_process, int timeDiskIO, int 
     scheduler->printerTime = 0;
     scheduler->processorTime = 0;
     scheduler->processingPID = 0;
-
 }
 
 void IOreturn (Scheduler* scheduler, int IO) {
@@ -104,39 +102,71 @@ void processIO (Scheduler* scheduler) {
 void printAllQueues (Scheduler scheduler) {
 
     if (!isEmpty(scheduler.highPriority)){
-        printw ("\nFila de Alta priority: ");
+        printw ("\nHigh priority queue: ");
         printQueue (scheduler.highPriority);
     }
     else {
-        printw ("\nFila de Alta priority: \n");
+        printw ("\nHigh priority queue: \n");
     }
     if (!isEmpty(scheduler.lowPriority)){
-        printw ("Fila de Baixa priority: ");
+        printw ("Low priority queue: ");
         printQueue (scheduler.lowPriority);
     }
     else {
-        printw ("Fila de Baixa priority: \n");
+        printw ("Low priority queue: \n");
     }
     if (!isEmpty(scheduler.disk)){
-        printw ("Fila do Disco: ");
+        printw ("Disk queue: ");
         printQueue (scheduler.disk);
     }
     else {
-        printw ("Fila do Disco: \n");
+        printw ("Disk queue: \n");
     }
     if (!isEmpty(scheduler.tape)){
-        printw ("Fila da Fita: ");
+        printw ("Tape queue: ");
         printQueue (scheduler.tape);
     }
     else {
-        printw ("Fila da Fita: \n");
+        printw ("Tape queue: \n");
     }
     if (!isEmpty(scheduler.printer)){
-        printw ("Fila da Impressora: ");
+        printw ("Printer queue: ");
         printQueue (scheduler.printer);
     }
     else {
-        printw ("Fila da Impressora: \n");
+        printw ("Printer queue: \n");
+    }
+}
+
+void processDisk(Scheduler* scheduler, Process* processes, int index) {
+    for (int i = 0; i < processes[index].diskNumber; i++) {
+        if ((processes[index].programCounter == processes[index].diskRequests[i]) && (processes[index].status == 1)) {
+            processes[index].status = 0;
+            processes[index].priority = 2;
+            scheduler->processorTime = scheduler->quantumTime;
+            joinQueue(&(scheduler->disk), processes[index].pid);
+        }
+    }
+}
+void processTape(Scheduler* scheduler, Process* processes, int index) {
+    for (int i = 0; i < processes[index].tapeNumber; i++) {
+        if ((processes[index].programCounter == processes[index].tapeRequests[i]) && (processes[index].status == 1)) {
+            processes[index].status = 0;
+            processes[index].priority = 1;
+            scheduler->processorTime = scheduler->quantumTime;
+            joinQueue(&(scheduler->tape), processes[index].pid);
+        }
+    }
+}
+
+void processPrinter(Scheduler* scheduler, Process* processes, int index) {
+    for (int i = 0; i < processes[index].printerNumber; i++) {
+        if ((processes[index].programCounter == processes[index].printerRequests[i]) && (processes[index].status == 1)) {
+            processes[index].status = 0;
+            processes[index].priority = 1;
+            scheduler->processorTime = scheduler->quantumTime;
+            joinQueue(&(scheduler->printer), processes[index].pid);
+        }
     }
 }
 
@@ -165,31 +195,9 @@ void process(Scheduler *scheduler, Process* processes, int time) {
             processes[index].programCounter += 1;
         }
 
-        int i;
-        for (i = 0; i < processes[index].diskNumber; i++) {
-            if ((processes[index].programCounter == processes[index].diskRequests[i]) && (processes[index].status == 1)) {
-                processes[index].status = 0;
-                processes[index].priority = 2;
-                scheduler->processorTime = scheduler->quantumTime;
-                joinQueue(&(scheduler->disk), processes[index].pid);
-            }
-        }
-        for (i = 0; i < processes[index].tapeNumber; i++) {
-            if ((processes[index].programCounter == processes[index].tapeRequests[i]) && (processes[index].status == 1)) {
-                processes[index].status = 0;
-                processes[index].priority = 1;
-                scheduler->processorTime = scheduler->quantumTime;
-                joinQueue(&(scheduler->tape), processes[index].pid);
-            }
-        }
-        for (i = 0; i < processes[index].printerNumber; i++) {
-            if ((processes[index].programCounter == processes[index].printerRequests[i]) && (processes[index].status == 1)) {
-                processes[index].status = 0;
-                processes[index].priority = 1;
-                scheduler->processorTime = scheduler->quantumTime;
-                joinQueue(&(scheduler->printer), processes[index].pid);
-            }
-        }
+        processDisk(scheduler, processes, index);
+        processTape(scheduler, processes, index);
+        processPrinter(scheduler, processes, index);
         
         if (processes[index].programCounter == processes[index].service) {
             processes[index].end = time;

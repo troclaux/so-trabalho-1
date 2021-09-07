@@ -19,24 +19,18 @@ void start(Scheduler* scheduler, Process* processes) {
 }
 
 int main () {
-    initscr();
-    start_color();
-    printw("--- Simulacao de escalonamento de processes\n\n");
-    printw("--- Alunos:\n--- Daniel La Rubia\n--- Maria Eduarda Lucena\n--- Yuri Medeiros\n\n");
-    printw("Aperte ENTER para iniciar!\n");
-    refresh();
-    while(getch() != '\n');
-
     Scheduler scheduler;
     startScheduler(&scheduler, MAX_PROCESS_NUMBER, DISK_IO_TIME, TAPE_IO_TIME, PRINTER_IO_TIME, QUANTUM);
 
 	Process processes[MAX_PROCESS_NUMBER];
 
     int userProcesses;
-    printw("\nDigite o numero de processes:\n");
+    initscr();
+    start_color();
+    printw("\nNumber of processes:\n");
     refresh();
     scanw("%d", &userProcesses);
-    printw("\nTotal de processes = %d\n", userProcesses);
+    printw("\nTotal processes = %d\n", userProcesses);
     refresh();
 
 
@@ -58,7 +52,7 @@ int main () {
         clear();
         init_pair(50, COLOR_WHITE, COLOR_BLACK);
         attron(COLOR_PAIR(50));
-        printw("Tempo = %d u.t.\n", timeUnity);
+        printw("Time = %d t.u.\n", timeUnity);
         refresh();
         printProcesses(processes, userProcesses);
         refresh();
