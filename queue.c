@@ -54,8 +54,7 @@ int exitQueue(queue* queue) {
 void printQueue(queue queue) {
     int i = 0;
     for (i = queue.front; i != (queue.rear + 1); i = ((i + 1) % (queue.size + 1))) {
-        printw("%d ", queue.pids[i]);
-        refresh();
+        printf("%d ", queue.pids[i]);
     }
-    printw("\n");
+    printf("\n");
 }

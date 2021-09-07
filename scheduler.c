@@ -102,39 +102,39 @@ void processIO (Scheduler* scheduler) {
 void printAllQueues (Scheduler scheduler) {
 
     if (!isEmpty(scheduler.highPriority)){
-        printw ("\nHigh priority queue: ");
+        printf ("\nHigh priority queue: ");
         printQueue (scheduler.highPriority);
     }
     else {
-        printw ("\nHigh priority queue: \n");
+        printf ("\nHigh priority queue: \n");
     }
     if (!isEmpty(scheduler.lowPriority)){
-        printw ("Low priority queue: ");
+        printf ("Low priority queue: ");
         printQueue (scheduler.lowPriority);
     }
     else {
-        printw ("Low priority queue: \n");
+        printf ("Low priority queue: \n");
     }
     if (!isEmpty(scheduler.disk)){
-        printw ("Disk queue: ");
+        printf ("Disk queue: ");
         printQueue (scheduler.disk);
     }
     else {
-        printw ("Disk queue: \n");
+        printf ("Disk queue: \n");
     }
     if (!isEmpty(scheduler.tape)){
-        printw ("Tape queue: ");
+        printf ("Tape queue: ");
         printQueue (scheduler.tape);
     }
     else {
-        printw ("Tape queue: \n");
+        printf ("Tape queue: \n");
     }
     if (!isEmpty(scheduler.printer)){
-        printw ("Printer queue: ");
+        printf ("Printer queue: ");
         printQueue (scheduler.printer);
     }
     else {
-        printw ("Printer queue: \n");
+        printf ("Printer queue: \n");
     }
 }
 

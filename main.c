@@ -5,7 +5,6 @@ const int PRINTER_IO_TIME = 5;
 const int MAX_PROCESS_NUMBER = 51;
 #include <stdio.h>
 #include <unistd.h>
-#include <ncurses.h>
 #include "scheduler.h"
 
 
@@ -25,13 +24,9 @@ int main () {
 	Process processes[MAX_PROCESS_NUMBER];
 
     int userProcesses;
-    initscr();
-    start_color();
-    printw("\nNumber of processes:\n");
-    refresh();
-    scanw("%d", &userProcesses);
-    printw("\nTotal processes = %d\n", userProcesses);
-    refresh();
+    printf("\nNumber of processes:\n");
+    scanf("%d", &userProcesses);
+    printf("\nTotal processes = %d\n", userProcesses);
 
 
     int i;
@@ -39,6 +34,12 @@ int main () {
         startProcess(&processes[i], &processCounter, NULL, timeUnity);
     }
 
+    printf("\e[1;1H\e[2J");
+    printf("Time = %d t.u.\n", timeUnity);
+    printf("QUANTUM = %d t.u.\n", QUANTUM);
+    printProcesses(processes, userProcesses);
+    printAllQueues(scheduler);
+    getchar();
     while(1) {
 
         for (i = 0; i < userProcesses; i++){
@@ -49,18 +50,12 @@ int main () {
 
         start(&scheduler, processes);
         
-        clear();
-        init_pair(50, COLOR_WHITE, COLOR_BLACK);
-        attron(COLOR_PAIR(50));
-        printw("Time = %d t.u.\n", timeUnity);
-        refresh();
+        printf("\e[1;1H\e[2J");
+        printf("Time = %d t.u.\n", timeUnity);
+        printf("QUANTUM = %d t.u.\n", QUANTUM);
         printProcesses(processes, userProcesses);
-        refresh();
-        attron(COLOR_PAIR(2));
         printAllQueues(scheduler);
-
-        refresh();
-        getch();
+        getchar();
     }
 
 	return 0;

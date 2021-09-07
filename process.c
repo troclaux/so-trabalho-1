@@ -21,6 +21,7 @@ typedef struct process {
     int printerNumber;
 } Process;
 
+
 void startProcess (Process* process, int* processCounter, Process* father, int actualTime) {
     srand((unsigned)((time(NULL)*seed)));
     seed = rand()* *processCounter;
@@ -99,42 +100,38 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
 
 
 void printProcesses(Process process[], int totalProcesses) {
-    init_pair(1, COLOR_WHITE, COLOR_BLACK);
-    init_pair(2, COLOR_WHITE, COLOR_BLACK);
-    attron(COLOR_PAIR(1));
-    printw ("PID\tPPID\tPriority\tStart\tEnd\tStatus\tPC\tService\t\tDisk\t\tTape\t\tPrinter\n");
-    attron(COLOR_PAIR(2));
+    printf("PID\tPPID\tPriority\tStart\tEnd\tStatus\tPC\tService\t\tDisk\t\tTape\t\tPrinter\n");
     for (int i = 0; i < totalProcesses; i++) {
-        printw ("%d\t", process[i].pid);
-        printw ("%d\t", process[i].ppid);
-        printw ("%d\t\t", process[i].priority);
-        printw ("%d\t", process[i].start);
-        printw ("%d\t", process[i].end);
-        printw ("%d\t", process[i].status);
-        printw ("%d\t", process[i].programCounter);
-        printw ("%d\t\t", process[i].service);
+        printf ("%d\t", process[i].pid);
+        printf ("%d\t", process[i].ppid);
+        printf ("%d\t\t", process[i].priority);
+        printf ("%d\t", process[i].start);
+        printf ("%d\t", process[i].end);
+        printf ("%d\t", process[i].status);
+        printf ("%d\t", process[i].programCounter);
+        printf ("%d\t\t", process[i].service);
         int j;
         for (j = 0; j < process[i].diskNumber; j++) {
-            printw("%d", process[i].diskRequests[j]);
+            printf("%d", process[i].diskRequests[j]);
             if (j != (process[i].diskNumber - 1)) {
-                printw(",");
+                printf(",");
             }
         }
-        printw("\t\t");
+        printf("\t\t");
         for (j = 0; j < process[i].tapeNumber; j++) {
-            printw("%d", process[i].tapeRequests[j]);
+            printf("%d", process[i].tapeRequests[j]);
             if (j != (process[i].tapeNumber - 1)) {
-                printw(",");
+                printf(",");
             }
         }
-        printw("\t\t");
+        printf("\t\t");
         for (j = 0; j < process[i].printerNumber; j++) {
-            printw("%d", process[i].printerRequests[j]);
+            printf("%d", process[i].printerRequests[j]);
             if (j != (process[i].printerNumber - 1)) {
-                printw(",");
+                printf(",");
             }
         }
-        printw ("\n");
+        printf ("\n");
     }
 }
 int getProcessByPID (Process* processes, int PID) {
