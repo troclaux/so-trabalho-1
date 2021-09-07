@@ -31,16 +31,16 @@ void startProcess (Process* process, int* processCounter, Process* father, int a
     process->priority = 1;
     process->status = 0;
     process->programCounter = 1;
-    process->service = (rand() % 40) + 3;
-    process->start = rand() % 51;
+    process->service = (rand() % 20) + 3;
+    process->start = rand() % 20;
     if (father == NULL) process->ppid = 1;
     else process->ppid = father->pid;
 
-    process->diskNumber = rand() % 3;
+    process->diskNumber = rand() % 2;
     process->diskRequests = (int*)malloc(sizeof(int) * process->diskNumber);
-    process->tapeNumber = rand() % 3;
+    process->tapeNumber = rand() % 2;
     process->tapeRequests = (int*)malloc(sizeof(int) * process->tapeNumber);
-    process->printerNumber = rand() % 3;
+    process->printerNumber = rand() % 2;
     process->printerRequests = (int*)malloc(sizeof(int) * process->printerNumber);
     process->end = 0;
 

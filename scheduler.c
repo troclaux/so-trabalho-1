@@ -200,8 +200,10 @@ void process(Scheduler *scheduler, Process* processes, int time) {
         processPrinter(scheduler, processes, index);
         
         if (processes[index].programCounter == processes[index].service) {
-            processes[index].end = time;
-            processes[index].status = 0;
+            if (processes[index].end == 0) {
+                processes[index].end = time-1;
+                processes[index].status = 0;
+            }
         }
 
         if (scheduler->processorTime >= scheduler->quantumTime) {
