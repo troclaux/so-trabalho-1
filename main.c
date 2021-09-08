@@ -2,7 +2,7 @@ const int QUANTUM = 5;
 const int DISK_IO_TIME = 2;
 const int TAPE_IO_TIME = 3;
 const int PRINTER_IO_TIME = 5;
-const int MAX_PROCESS_NUMBER = 51;
+const int MAX_PROCESS_NUMBER = 15;
 #include <stdio.h>
 #include <unistd.h>
 #include "scheduler.h"
@@ -35,7 +35,7 @@ int main () {
     }
 
     printf("\e[1;1H\e[2J");
-    printf("Time = %d t.u.\n", timeUnity);
+    printf("Time = %d t.u.\n", timeUnity-1);
     printf("QUANTUM = %d t.u.\n", QUANTUM);
     printProcesses(processes, userProcesses);
     printAllQueues(scheduler);
@@ -51,7 +51,7 @@ int main () {
         start(&scheduler, processes);
         
         printf("\e[1;1H\e[2J");
-        printf("Time = %d t.u.\n", timeUnity);
+        printf("Time = %d t.u.\n", timeUnity-1);
         printf("QUANTUM = %d t.u.\n", QUANTUM);
         printProcesses(processes, userProcesses);
         printAllQueues(scheduler);

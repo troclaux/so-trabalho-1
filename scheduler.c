@@ -139,35 +139,30 @@ void printAllQueues (Scheduler scheduler) {
 }
 
 void processDisk(Scheduler* scheduler, Process* processes, int index) {
-    for (int i = 0; i < processes[index].diskNumber; i++) {
-        if ((processes[index].programCounter == processes[index].diskRequests[i]) && (processes[index].status == 1)) {
-            processes[index].status = 0;
-            processes[index].priority = 2;
-            scheduler->processorTime = scheduler->quantumTime;
-            joinQueue(&(scheduler->disk), processes[index].pid);
-        }
+    if ((processes[index].programCounter == processes[index].diskRequests) && (processes[index].status == 1) && (processes[index].diskRequests != 0)) {
+        processes[index].status = 0;
+        processes[index].priority = 2;
+        scheduler->processorTime = scheduler->quantumTime;
+        joinQueue(&(scheduler->disk), processes[index].pid);
     }
 }
 void processTape(Scheduler* scheduler, Process* processes, int index) {
-    for (int i = 0; i < processes[index].tapeNumber; i++) {
-        if ((processes[index].programCounter == processes[index].tapeRequests[i]) && (processes[index].status == 1)) {
-            processes[index].status = 0;
-            processes[index].priority = 1;
-            scheduler->processorTime = scheduler->quantumTime;
-            joinQueue(&(scheduler->tape), processes[index].pid);
-        }
+    if ((processes[index].programCounter == processes[index].tapeRequests) && (processes[index].status == 1) && (processes[index].tapeRequests != 0)) {
+        processes[index].status = 0;
+        processes[index].priority = 1;
+        scheduler->processorTime = scheduler->quantumTime;
+        joinQueue(&(scheduler->tape), processes[index].pid);
     }
 }
 
 void processPrinter(Scheduler* scheduler, Process* processes, int index) {
-    for (int i = 0; i < processes[index].printerNumber; i++) {
-        if ((processes[index].programCounter == processes[index].printerRequests[i]) && (processes[index].status == 1)) {
-            processes[index].status = 0;
-            processes[index].priority = 1;
-            scheduler->processorTime = scheduler->quantumTime;
-            joinQueue(&(scheduler->printer), processes[index].pid);
-        }
+    if ((processes[index].programCounter == processes[index].printerRequests) && (processes[index].status == 1) && (processes[index].printerRequests != 0)) {
+        processes[index].status = 0;
+        processes[index].priority = 1;
+        scheduler->processorTime = scheduler->quantumTime;
+        joinQueue(&(scheduler->printer), processes[index].pid);
     }
+
 }
 
 void process(Scheduler *scheduler, Process* processes, int time) {
@@ -180,7 +175,6 @@ void process(Scheduler *scheduler, Process* processes, int time) {
             scheduler->processingPID = exitQueue(&(scheduler->lowPriority));
         }
         scheduler->processorTime += 1;
-
         index = getProcessByPID(processes, scheduler->processingPID);
 
         processes[index].status = 1;
@@ -190,7 +184,7 @@ void process(Scheduler *scheduler, Process* processes, int time) {
         scheduler->processorTime = scheduler->processorTime + 1;
 
         index = getProcessByPID(processes, scheduler->processingPID);
-        
+
         if (processes[index].status == 1) {
             processes[index].programCounter += 1;
         }
