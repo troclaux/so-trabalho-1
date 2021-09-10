@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.ipynb": "bat",
+    "limits": "c",
+    "*.tcc": "c",
+    "type_traits": "c"
+  }
+}
