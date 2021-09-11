@@ -69,6 +69,9 @@ Process newProcess(int pid, int ppid) {
   process.priority = 1;
   process.status = 0;
   process.service = rand() % 30;
+  process.diskRequests = (int *)calloc(4, sizeof(int));
+  process.tapeRequests = (int *)calloc(4, sizeof(int));
+  process.printerRequests = (int *)calloc(4, sizeof(int));
   process.diskRequests = generateIOTime(process.service, process.tapeRequests, process.printerRequests);
   process.tapeRequests = generateIOTime(process.service, process.diskRequests, process.printerRequests);
   process.printerRequests = generateIOTime(process.service, process.diskRequests, process.tapeRequests);
@@ -77,7 +80,7 @@ Process newProcess(int pid, int ppid) {
 }
 
 void printProcess(Process process){
-  printf("PID | PPID | status | start | end | priority | processedTU | service | printer| tape | disk \n");
+  printf("PID | PPID | status | start | end | priority | processedTU | service | printer | tape | disk \n");
   printf("%d | ", process.pid);
   printf("%d | ", process.ppid);
   printf("%d | ", process.status);
