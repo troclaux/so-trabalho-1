@@ -10,9 +10,6 @@ int main() {
   Process process1;
   process1 = newProcess(100, 1);
   printProcess(process1);
-      /*   for(int i=0; i<3; i++){
-    
-  } */
 
-      return 0;
+  return 0;
 }
