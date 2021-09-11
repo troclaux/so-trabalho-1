@@ -3,6 +3,7 @@
     "*.ipynb": "bat",
     "limits": "c",
     "*.tcc": "c",
-    "type_traits": "c"
+    "type_traits": "c",
+    "cmath": "cpp"
   }
 }

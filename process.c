@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdbool.h>
 
-typedef struct process {
+typedef struct{
   int pid;
   int ppid;
   int start;
@@ -16,6 +16,8 @@ typedef struct process {
   int *tapeRequests;
   int *diskRequests;
 } Process;
+
+static const Process EmptyProcess;
 
 bool checkIntInArray(int number, int *array) {
   int i, length;
@@ -87,4 +89,10 @@ void printProcess(Process process){
   printf("%p | ", (void *) process.printerRequests);
   printf("%p | ", (void *) process.tapeRequests);
   printf("%p \n", (void *) process.diskRequests);
+}
+
+void killProcess(Process process) {
+  free(process.diskRequests);
+  free(process.tapeRequests);
+  free(process.printerRequests);
 }
