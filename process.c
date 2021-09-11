@@ -31,6 +31,9 @@ bool checkIntInArray(int number, int *array) {
 }
 
 int *generateIOTime(int serviceTime, int *IOArray1, int *IOArray2) {
+  if (serviceTime == 0) {
+    return NULL;
+  }
   bool exists;
   int i, temp;
   int *IOTimeArray;
