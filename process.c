@@ -40,7 +40,7 @@ int *generateIOTime(int serviceTime, int *IOArray1, int *IOArray2) {
   int quantity = rand() % 4;
   IOTimeArray = (int *)calloc(quantity + 1, sizeof(int));
   IOTimeArray[0] = quantity;
-  for (i = 1; i < quantity + 1; i++) {
+  for (int j = 1; j < quantity + 1; j++) {
     temp = rand() % serviceTime;
     if (checkIntInArray(temp, IOTimeArray) || 
         checkIntInArray(temp, IOArray1) || 
@@ -83,18 +83,17 @@ Process newProcess(int pid, int ppid) {
 }
 
 void printProcess(Process process){
-  printf("PID | PPID | status | start | end | priority | processedTU | service | printer | tape | disk \n");
-  printf("%d | ", process.pid);
-  printf("%d | ", process.ppid);
-  printf("%d | ", process.status);
-  printf("%d | ", process.start);
-  printf("%d | ", process.end);
-  printf("%d | ", process.priority);
-  printf("%d | ", process.processedTU);
-  printf("%d | ", process.service);
-  printf("%p | ", (void *) process.printerRequests);
-  printf("%p | ", (void *) process.tapeRequests);
-  printf("%p \n", (void *) process.diskRequests);
+  printf("PID: %d | ", process.pid);
+  printf("PPID: %d | ", process.ppid);
+  printf("status: %d | ", process.status);
+  printf("start: %d | ", process.start);
+  printf("end: %d | ", process.end);
+  printf("priority: %d | ", process.priority);
+  printf("processeTU: %d | ", process.processedTU);
+  printf("service: %d | ", process.service);
+  printf("printer: %d | ", *process.printerRequests);
+  printf("tape: %d | ", *process.tapeRequests);
+  printf("disk: %d \n", *process.diskRequests);
 }
 
 void killProcess(Process process) {

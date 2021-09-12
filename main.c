@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+//#include "scheduler.c" (depois deletar include queue)
 #include "queue.h"
 
 int main() {
