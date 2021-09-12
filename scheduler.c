@@ -15,6 +15,7 @@ typedef struct{
   Queue* printerQueue;
   unsigned printerTimer;
   int quantum;
+  int quantumChecker;
   int programCounter;
   int runningProcessPID;
 } Scheduler;
@@ -51,30 +52,52 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
   return scheduler;
 }
 
+void preempt(Scheduler *schedule, int pid){
+  process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses);
+
+  return;
+}
 
 //TODO
-void updateProcesses(Scheduler *scheduler){
-  Process *process;
+//falta tratar a preempçao
+//falta tratar as filas pros IOs
+void updateScheduler(Scheduler *scheduler){
+  Process process;
 
+  //se o escalonador já tem algum processo computando
   if(scheduler->runningProcessPID){
     //começo
-    process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses);
-    process->processedTU++;
+    process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
+    process.processedTU++;
+    scheduler->quantumChecker++;
+    if(process.processedTU == process.service){
+      finishProcess(process);
+    } else if (checkIntInArray(process.processedTU, process.diskRequests)) {
+      enqueue(scheduler.diskQueue, process);
+    } else if (checkIntInArray(process.processedTU, process.tapeRequests)) {
+      enqueue(scheduler.tapeQueue, process);
+    } else if (checkIntInArray(process.processedTU, process.printerRequests)) {
+      enqueue(scheduler.printerQueue, process);
+    }
+  //se nao estiver computando
   }else{
     if (!isEmpty(scheduler->highPriority)){
       //computa os processos de alta prioridade
-
+      //desempilha highpriority e define o running process como o processo desempilhado 
+      scheduler->runningProcessPID = dequeue(scheduler->highPriority).pid;
     }
     else if (!isEmpty(scheduler->lowPriority)){
       //computa processos de baixa prioridade
+      scheduler->runningProcessPID = dequeue(scheduler->lowPriority).pid;
     }else{
-
+      //se ambas as filas estiverem vazias
+      return;
     }
   }
 }
 
 
-bool unfinishedProcessExist(Scheduler *scheduler){
+bool unfinishedProcessesExist(Scheduler *scheduler){
   for(int i = 0 ; i < scheduler->numberOfProcesses ; i++){
     if(!scheduler->allProcesses[i].finished){
       return true;
@@ -84,8 +107,9 @@ bool unfinishedProcessExist(Scheduler *scheduler){
 }
 
 void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
-  while(unfinishedProcessExist(scheduler)){
-    updateProcesses(scheduler);
+  while(unfinishedProcessesExist(scheduler)){
+    getchar();
+    updateScheduler(scheduler);
     scheduler->programCounter++;
   }
 }
