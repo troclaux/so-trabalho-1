@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "process.h"
 
 typedef struct {
@@ -9,6 +10,8 @@ typedef struct {
   int size; //numero de elementos na fila
   int capacity; //capacidade maxima estatica da fila
 } Queue;
+
+static const Queue EmptyQueue;
 
 Queue *newQueue(int length) {
   Queue *queue;
@@ -21,12 +24,12 @@ Queue *newQueue(int length) {
   return queue;
 }
 
-int isEmpty(Queue *queue){
+bool isEmpty(Queue *queue){
   if(queue->size == 0){
-    return 1;
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 void enqueue(Queue *queue, Process process) {

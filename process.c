@@ -15,6 +15,7 @@ typedef struct{
   int *printerRequests;
   int *tapeRequests;
   int *diskRequests;
+  bool finished;
 } Process;
 
 static const Process EmptyProcess;
@@ -69,6 +70,7 @@ Process newProcess(int pid, int ppid) {
   process.end = -1;
   process.processedTU = 0;
 
+  process.finished = false;
   process.priority = 1;
   process.status = 0;
   process.service = rand() % 30;
@@ -82,22 +84,37 @@ Process newProcess(int pid, int ppid) {
   return process;
 }
 
-void printProcess(Process process){
-  printf("PID: %d | ", process.pid);
-  printf("PPID: %d | ", process.ppid);
-  printf("status: %d | ", process.status);
-  printf("start: %d | ", process.start);
-  printf("end: %d | ", process.end);
-  printf("priority: %d | ", process.priority);
-  printf("processeTU: %d | ", process.processedTU);
-  printf("service: %d | ", process.service);
-  printf("printer: %d | ", *process.printerRequests);
-  printf("tape: %d | ", *process.tapeRequests);
-  printf("disk: %d \n", *process.diskRequests);
+void printProcess(Process *process) {
+  printf("PID: %d | ", process->pid);
+  printf("PPID: %d | ", process->ppid);
+  printf("status: %d | ", process->status);
+  printf("start: %d | ", process->start);
+  printf("end: %d | ", process->end);
+  printf("priority: %d | ", process->priority);
+  printf("processeTU: %d | ", process->processedTU);
+  printf("service: %d | ", process->service);
+  printf("printer: %d | ", *process->printerRequests);
+  printf("tape: %d | ", *process->tapeRequests);
+  printf("disk: %d \n", *process->diskRequests);
 }
 
-void killProcess(Process process) {
-  free(process.diskRequests);
-  free(process.tapeRequests);
-  free(process.printerRequests);
+void killProcess(Process *process) {
+  free(process->diskRequests);
+  free(process->tapeRequests);
+  free(process->end);
+}
+
+void finishProcess(Process *process) {
+  process->finished = true;
+}
+
+Process *getProcessByPID(int pid, Process *processes){
+  int temp;
+  temp = sizeof(processes) / sizeof(Process);
+  for (int i = 0; i < temp; i++){
+
+    if (processes[i].pid == pid){
+      return &processes[i];
+    }
+  }
 }
