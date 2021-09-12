@@ -23,7 +23,7 @@ static const Process EmptyProcess;
 bool checkIntInArray(int number, int *array) {
   int i, length;
   length = array[0];
-  for (i = 1; i < length; i++) {
+  for (i = 1; i <= length; i++) {
     if (array[i] == number) {
       return true;
     }
@@ -36,9 +36,17 @@ int *generateIOTime(int serviceTime, int *IOArray1, int *IOArray2) {
     return NULL;
   }
   bool exists;
-  int i, temp;
+  int temp, quantity;
   int *IOTimeArray;
-  int quantity = rand() % 4;
+  if (serviceTime <= 3) {
+    quantity = rand() % 1;
+  } else if (serviceTime <= 6) {
+    quantity = rand() % 2;
+  } else if (serviceTime <= 10) {
+    quantity = rand() % 3;
+  } else {
+    quantity = rand() % 4;
+  }
   IOTimeArray = (int *)calloc(quantity + 1, sizeof(int));
   IOTimeArray[0] = quantity;
   for (int j = 1; j < quantity + 1; j++) {
@@ -57,7 +65,7 @@ int *generateIOTime(int serviceTime, int *IOArray1, int *IOArray2) {
         exists = false;
       }
     }
-    IOTimeArray[i] = temp;
+    IOTimeArray[j] = temp;
   }
   return IOTimeArray;
 }
@@ -66,14 +74,14 @@ Process newProcess(int pid, int ppid) {
   Process process;
   process.pid = pid;
   process.ppid = ppid;
-  process.start = rand() % 30;
+  process.start = rand() % 32;
   process.end = -1;
   process.processedTU = 0;
 
   process.finished = false;
   process.priority = 1;
   process.status = 0;
-  process.service = rand() % 30;
+  process.service = rand() % 30 + 2;
   process.diskRequests = (int *)calloc(4, sizeof(int));
   process.tapeRequests = (int *)calloc(4, sizeof(int));
   process.printerRequests = (int *)calloc(4, sizeof(int));
@@ -84,37 +92,85 @@ Process newProcess(int pid, int ppid) {
   return process;
 }
 
-void printProcess(Process *process) {
-  printf("PID: %d | ", process->pid);
-  printf("PPID: %d | ", process->ppid);
-  printf("status: %d | ", process->status);
-  printf("start: %d | ", process->start);
-  printf("end: %d | ", process->end);
-  printf("priority: %d | ", process->priority);
-  printf("processeTU: %d | ", process->processedTU);
-  printf("service: %d | ", process->service);
-  printf("printer: %d | ", *process->printerRequests);
-  printf("tape: %d | ", *process->tapeRequests);
-  printf("disk: %d \n", *process->diskRequests);
+void printProcess(Process process) {
+  int sizePrinterRequests, sizeTapeRequests, sizeDiskRequests, i;
+  if (process.printerRequests != NULL) {
+    sizePrinterRequests = process.printerRequests[0];
+  } else {
+    sizePrinterRequests = 0;
+  }
+  if (process.printerRequests != NULL) {
+    sizeTapeRequests = process.tapeRequests[0];
+  } else {
+    sizeTapeRequests = 0;
+  }
+  if (process.printerRequests != NULL) {
+    sizeDiskRequests = process.diskRequests[0];
+  } else {
+    sizeDiskRequests = 0;
+  }
+  printf("PID: %d | ", process.pid);
+  printf("PPID: %d | ", process.ppid);
+  printf("status: %d | ", process.status);
+  printf("start: %d | ", process.start);
+  printf("end: %d | ", process.end);
+  printf("priority: %d | ", process.priority);
+  printf("processeTU: %d | ", process.processedTU);
+  printf("service: %d | ", process.service);
+  if (sizeDiskRequests > 0) {
+    printf("disk: ");
+    printf("[%d]: ", sizeDiskRequests);
+    for(i = 1 ; i <= sizeDiskRequests ; i++){
+      if (i == sizeDiskRequests) {
+        printf("%d", process.diskRequests[i]);
+      } else {
+        printf("%d, ", process.diskRequests[i]);
+      }
+    }
+    printf(" | ");
+  }
+  if (sizePrinterRequests > 0) {
+    printf("printer: ");
+    printf("[%d]: ", sizePrinterRequests);
+    for(i = 1 ; i <= sizePrinterRequests ; i++){
+      if (i == sizePrinterRequests) {
+        printf("%d", process.printerRequests[i]);
+      } else {
+        printf("%d, ", process.printerRequests[i]);
+      }
+    }
+    printf(" | ");
+  }
+  if (sizeTapeRequests > 0) {
+    printf("tape: ");
+    printf("[%d]: ", sizeTapeRequests);
+    for(i = 1 ; i <= sizeTapeRequests ; i++){
+      if (i == sizeTapeRequests) {
+        printf("%d", process.tapeRequests[i]);
+      } else {
+        printf("%d, ", process.tapeRequests[i]);
+      }
+    }
+    printf(" |");
+  }
+  printf("\n");
 }
 
-void killProcess(Process *process) {
-  free(process->diskRequests);
-  free(process->tapeRequests);
-  free(process->end);
+void killProcess(Process process) {
+  free(process.diskRequests);
+  free(process.tapeRequests);
+  free(process.printerRequests);
 }
 
 void finishProcess(Process *process) {
   process->finished = true;
 }
 
-Process *getProcessByPID(int pid, Process *processes){
-  int temp;
-  temp = sizeof(processes) / sizeof(Process);
-  for (int i = 0; i < temp; i++){
+Process getProcessByPID(int pid, Process *processes, int size){
+  for (int i = 0; i < size; i++){
 
     if (processes[i].pid == pid){
-      return &processes[i];
+      return processes[i];
     }
   }
 }
