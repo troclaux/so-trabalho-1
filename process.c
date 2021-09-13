@@ -8,13 +8,12 @@ typedef struct{
   int ppid;
   int start;
   int end;
-  int priority;
   int status;
   int processedTU;
   int service;
-  int *printerRequests;
-  int *tapeRequests;
   int *diskRequests;
+  int *tapeRequests;
+  int *printerRequests;
   bool finished;
 } Process;
 
@@ -79,7 +78,6 @@ Process newProcess(int pid, int ppid) {
   process.processedTU = 0;
 
   process.finished = false;
-  process.priority = 1;
   process.status = 0;
   process.service = rand() % 30 + 2;
   process.diskRequests = (int *)calloc(4, sizeof(int));
@@ -94,27 +92,26 @@ Process newProcess(int pid, int ppid) {
 
 void printProcess(Process process) {
   int sizePrinterRequests, sizeTapeRequests, sizeDiskRequests, i;
-  if (process.printerRequests != NULL) {
-    sizePrinterRequests = process.printerRequests[0];
+  if (process.diskRequests != NULL) {
+    sizeDiskRequests = process.diskRequests[0];
   } else {
-    sizePrinterRequests = 0;
+    sizeDiskRequests = 0;
   }
-  if (process.printerRequests != NULL) {
+  if (process.tapeRequests != NULL) {
     sizeTapeRequests = process.tapeRequests[0];
   } else {
     sizeTapeRequests = 0;
   }
   if (process.printerRequests != NULL) {
-    sizeDiskRequests = process.diskRequests[0];
+    sizePrinterRequests = process.printerRequests[0];
   } else {
-    sizeDiskRequests = 0;
+    sizePrinterRequests = 0;
   }
   printf("PID: %d | ", process.pid);
   printf("PPID: %d | ", process.ppid);
   printf("status: %d | ", process.status);
   printf("start: %d | ", process.start);
   printf("end: %d | ", process.end);
-  printf("priority: %d | ", process.priority);
   printf("processeTU: %d | ", process.processedTU);
   printf("service: %d | ", process.service);
   if (sizeDiskRequests > 0) {
@@ -156,21 +153,16 @@ void printProcess(Process process) {
   printf("\n");
 }
 
-void killProcess(Process process) {
-  free(process.diskRequests);
-  free(process.tapeRequests);
-  free(process.printerRequests);
+void killProcess(Process *process) {
+  free(process->diskRequests);
+  free(process->tapeRequests);
+  free(process->printerRequests);
 }
 
-void finishProcess(Process *process) {
-  process->finished = true;
-}
-
-Process getProcessByPID(int pid, Process *processes, int size){
+Process *getProcessByPID(int pid, Process *processes, int size){
   for (int i = 0; i < size; i++){
-
     if (processes[i].pid == pid){
-      return processes[i];
+      return &processes[i];
     }
   }
 }

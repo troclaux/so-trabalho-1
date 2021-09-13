@@ -62,3 +62,15 @@ int dequeue(Queue *queue) {
   
   return pid;
 }
+
+void printQueue(Queue *queue) {
+  int i;
+  if (!isEmpty(queue)) {
+    for (i = 0 ; i < queue->size ; i++) {
+      printf("%d", queue->array[i]);
+      if (i != queue->size - 1) {
+        printf(", ");
+      }
+    }
+  }
+}
