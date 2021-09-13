@@ -4,6 +4,8 @@
     "limits": "c",
     "*.tcc": "c",
     "type_traits": "c",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "*.c": "c",
+    "*.h": "c"
   }
 }
