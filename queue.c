@@ -11,8 +11,6 @@ typedef struct {
   int capacity; //capacidade maxima estatica da fila
 } Queue;
 
-static const Queue EmptyQueue;
-
 Queue *newQueue(int length) {
   Queue *queue;
   queue = (Queue *)calloc(1, sizeof(Queue));
@@ -73,4 +71,9 @@ void printQueue(Queue *queue) {
       }
     }
   }
+}
+
+void killQueue(Queue *queue) {
+  free(queue->array);
+  free(queue);
 }

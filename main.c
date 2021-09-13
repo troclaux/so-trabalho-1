@@ -43,6 +43,8 @@ int main() {
 
   scheduler = newScheduler(4, numProcessos, processes, 2, 3, 4);
   computeExecutionCycles(&scheduler, processes);
+  free(processes);
+  killScheduler(&scheduler);
 
   return 0;
 }

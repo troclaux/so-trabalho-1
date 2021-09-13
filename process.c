@@ -17,8 +17,6 @@ typedef struct{
   bool finished;
 } Process;
 
-static const Process EmptyProcess;
-
 bool checkIntInArray(int number, int *array) {
   int i, length;
   length = array[0];

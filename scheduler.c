@@ -9,18 +9,18 @@ typedef struct{
   Queue* highPriority;
   Queue* lowPriority;
   Queue* diskQueue;
-  unsigned diskQuantum;
+  int diskQuantum;
   Queue* tapeQueue;
-  unsigned tapeQuantum;
+  int tapeQuantum;
   Queue* printerQueue;
-  unsigned printerQuantum;
+  int printerQuantum;
   int quantum;
   int quantumChecker;
   int programCounter;
   int runningProcessPID;
-  int countDisk;
-  int countTape;
-  int countPrinter;
+  int diskCount;
+  int tapeCount;
+  int printerCount;
 } Scheduler;
 
 
@@ -36,9 +36,9 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
   scheduler.printerQueue = newQueue(numberOfProcesses);
   scheduler.programCounter = 0;
   scheduler.runningProcessPID = 0;
-  scheduler.countDisk = 0;
-  scheduler.countTape = 0;
-  scheduler.countPrinter = 0;
+  scheduler.diskCount = 0;
+  scheduler.tapeCount = 0;
+  scheduler.printerCount = 0;
   
   if (diskQuantum == 0) {
     scheduler.diskQuantum = (rand() % 5) + 2;
@@ -68,32 +68,32 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
 void processIOQueue(Scheduler *scheduler) {
   int processPid;
   if(!isEmpty(scheduler->diskQueue)) {
-    if(scheduler->countDisk == scheduler->diskQuantum) {
+    if(scheduler->diskCount == scheduler->diskQuantum) {
       processPid = dequeue(scheduler->diskQueue);
       enqueue(scheduler->lowPriority, processPid);
-      scheduler->countDisk = 0;
+      scheduler->diskCount = 0;
     } else {
-      scheduler->countDisk++;
+      scheduler->diskCount++;
     }
   }
 
   if(!isEmpty(scheduler->tapeQueue)) {
-    if(scheduler->countTape == scheduler->tapeQuantum) {
+    if(scheduler->tapeCount == scheduler->tapeQuantum) {
       processPid = dequeue(scheduler->tapeQueue);
       enqueue(scheduler->highPriority, processPid);
-      scheduler->countTape = 0;
+      scheduler->tapeCount = 0;
     }else{
-      scheduler->countTape++;
+      scheduler->tapeCount++;
     }
   }
 
   if(!isEmpty(scheduler->printerQueue)) {
-    if(scheduler->countPrinter == scheduler->printerQuantum) {
+    if(scheduler->printerCount == scheduler->printerQuantum) {
       processPid = dequeue(scheduler->printerQueue);
       enqueue(scheduler->highPriority, processPid);
-      scheduler->countPrinter = 0;
+      scheduler->printerCount = 0;
     } else {
-      scheduler->countPrinter++;
+      scheduler->printerCount++;
     }
   }
 }
@@ -219,9 +219,13 @@ void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
 }
 
 void killScheduler(Scheduler *scheduler) {
-  free(scheduler->highPriority);
-  free(scheduler->lowPriority);
-  free(scheduler->diskQueue);
-  free(scheduler->tapeQueue);
-  free(scheduler->printerQueue);
+  int i;
+  for (i = 0 ; i < scheduler->numberOfProcesses ; i++) {
+    killProcess(&scheduler->allProcesses[i]);
+  }
+  killQueue(scheduler->highPriority);
+  killQueue(scheduler->lowPriority);
+  killQueue(scheduler->diskQueue);
+  killQueue(scheduler->tapeQueue);
+  killQueue(scheduler->printerQueue);
 }
