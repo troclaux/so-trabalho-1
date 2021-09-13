@@ -9,20 +9,25 @@ typedef struct{
   Queue* highPriority;
   Queue* lowPriority;
   Queue* diskQueue;
-  unsigned diskTimer;
+  unsigned diskQuantum;
   Queue* tapeQueue;
-  unsigned tapeTimer;
+  unsigned tapeQuantum;
   Queue* printerQueue;
-  unsigned printerTimer;
+  unsigned printerQuantum;
   int quantum;
   int quantumChecker;
   int programCounter;
   int runningProcessPID;
+  int countDisk;
+  int countTape;
+  int countPrinter;
 } Scheduler;
 
 
-Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses, unsigned diskTimer, unsigned tapeTimer, unsigned printerTimer){
+Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses, unsigned diskQuantum, unsigned tapeQuantum, unsigned printerQuantum){
   Scheduler scheduler;
+  scheduler.quantum = quantum;
+  scheduler.numberOfProcesses = numberOfProcesses;
   scheduler.allProcesses = allProcesses;
   scheduler.highPriority = newQueue(numberOfProcesses);
   scheduler.lowPriority = newQueue(numberOfProcesses);
@@ -30,69 +35,121 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
   scheduler.tapeQueue = newQueue(numberOfProcesses);
   scheduler.printerQueue = newQueue(numberOfProcesses);
   scheduler.programCounter = 0;
-  scheduler.quantum = quantum;
   scheduler.runningProcessPID = 0;
+  scheduler.countDisk = 0;
+  scheduler.countTape = 0;
+  scheduler.countPrinter = 0;
   
-  if (diskTimer == 0) {
-    scheduler.diskTimer = (rand() % 5) + 2;
+  if (diskQuantum == 0) {
+    scheduler.diskQuantum = (rand() % 5) + 2;
   } else {
-    scheduler.diskTimer = diskTimer;
+    scheduler.diskQuantum = diskQuantum;
   }
-  if (tapeTimer == 0) {
-    scheduler.tapeTimer = (rand() % 5) + 2;
+  if (tapeQuantum == 0) {
+    scheduler.tapeQuantum = (rand() % 5) + 2;
   } else {
-    scheduler.tapeTimer = tapeTimer;
+    scheduler.tapeQuantum = tapeQuantum;
   }
-  if (printerTimer == 0) {
-    scheduler.printerTimer = (rand() % 5) + 2;
+  if (printerQuantum == 0) {
+    scheduler.printerQuantum = (rand() % 5) + 2;
   } else {
-    scheduler.printerTimer = printerTimer;
+    scheduler.printerQuantum = printerQuantum;
   }
 
   return scheduler;
 }
 
-void preempt(Scheduler *schedule, int pid){
-  process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses);
+/* void preempt(Scheduler *schedule, int pid){
+  int process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcess);
 
   return;
+} */
+
+void processIOQueue(Scheduler *scheduler) {
+  int processPid;
+  if(!isEmpty(scheduler->diskQueue)) {
+    if(scheduler->countDisk == scheduler->diskQuantum) {
+      processPid = dequeue(scheduler->diskQueue);
+      enqueue(scheduler->lowPriority, processPid);
+      scheduler->countDisk = 0;
+    } else {
+      scheduler->countDisk++;
+    }
+  }
+
+  if(!isEmpty(scheduler->tapeQueue)) {
+    if(scheduler->countTape == scheduler->tapeQuantum) {
+      processPid = dequeue(scheduler->tapeQueue);
+      enqueue(scheduler->highPriority, processPid);
+      scheduler->countTape = 0;
+    }else{
+      scheduler->countTape++;
+    }
+  }
+
+  if(!isEmpty(scheduler->printerQueue)) {
+    if(scheduler->countPrinter == scheduler->printerQuantum) {
+      processPid = dequeue(scheduler->printerQueue);
+      enqueue(scheduler->highPriority, processPid);
+      scheduler->countPrinter = 0;
+    } else {
+      scheduler->countPrinter++;
+    }
+  }
 }
 
-//TODO
-//falta tratar a preempçao
-//falta tratar as filas pros IOs
-void updateScheduler(Scheduler *scheduler){
-  Process process;
+void updateRunningProcess(Scheduler *scheduler) {
+  if (!isEmpty(scheduler->highPriority)){
+    //computa os processos de alta prioridade
+    //desempilha highpriority e define o running process como o processo desempilhado 
+    scheduler->runningProcessPID = dequeue(scheduler->highPriority);
+  }
+  else if (!isEmpty(scheduler->lowPriority)){
+    //computa processos de baixa prioridade
+    scheduler->runningProcessPID = dequeue(scheduler->lowPriority);
+  }
+}
 
+void updateScheduler(Scheduler *scheduler) {
+  processIOQueue(scheduler);
+  Process *process;
+
+  for(int i = 0 ; i < scheduler->numberOfProcesses ; i++) {
+
+    process = getProcessByPID(scheduler->allProcesses[i].pid, scheduler->allProcesses, scheduler->numberOfProcesses);
+
+    if(process->start == scheduler->programCounter){
+      enqueue(scheduler->highPriority, process->pid);
+    }
+  }
   //se o escalonador já tem algum processo computando
-  if(scheduler->runningProcessPID){
+  if(scheduler->runningProcessPID) {
     //começo
     process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
-    process.processedTU++;
+    process->processedTU++;
     scheduler->quantumChecker++;
-    if(process.processedTU == process.service){
-      finishProcess(process);
-    } else if (checkIntInArray(process.processedTU, process.diskRequests)) {
-      enqueue(scheduler.diskQueue, process);
-    } else if (checkIntInArray(process.processedTU, process.tapeRequests)) {
-      enqueue(scheduler.tapeQueue, process);
-    } else if (checkIntInArray(process.processedTU, process.printerRequests)) {
-      enqueue(scheduler.printerQueue, process);
+    if(process->processedTU == process->service){
+      process->finished = true;
+      updateRunningProcess(scheduler);
+    } else if (checkIntInArray(process->processedTU, process->diskRequests)) {
+      enqueue(scheduler->diskQueue, process->pid);
+      updateRunningProcess(scheduler);
+    } else if (checkIntInArray(process->processedTU, process->tapeRequests)) {
+      enqueue(scheduler->tapeQueue, process->pid);
+      updateRunningProcess(scheduler);
+    } else if (checkIntInArray(process->processedTU, process->printerRequests)) {
+      enqueue(scheduler->printerQueue, process->pid);
+      updateRunningProcess(scheduler);
+    }
+
+    //checa se precisa fazer preempcao
+    if (scheduler->quantumChecker == scheduler->quantum) {
+      scheduler->quantumChecker = 0;
+      enqueue(scheduler->lowPriority, process->pid);
     }
   //se nao estiver computando
-  }else{
-    if (!isEmpty(scheduler->highPriority)){
-      //computa os processos de alta prioridade
-      //desempilha highpriority e define o running process como o processo desempilhado 
-      scheduler->runningProcessPID = dequeue(scheduler->highPriority).pid;
-    }
-    else if (!isEmpty(scheduler->lowPriority)){
-      //computa processos de baixa prioridade
-      scheduler->runningProcessPID = dequeue(scheduler->lowPriority).pid;
-    }else{
-      //se ambas as filas estiverem vazias
-      return;
-    }
+  } else {
+    updateRunningProcess(scheduler);
   }
 }
 
@@ -106,11 +163,52 @@ bool unfinishedProcessesExist(Scheduler *scheduler){
   return false;
 }
 
+void printScheduler(Scheduler *scheduler) {
+  Process process;
+  printf("\e[1;1H\e[2J");
+  printf("U.T.: %d\n", scheduler->programCounter);
+  printf("PID\tPPID\tStart\tEnd\tStatus\tProcessedTU\tService\t\tDisk\t\tTape\t\tPrinter\n");
+  for (int i = 0 ; i < scheduler->numberOfProcesses ; i++) {
+    process = scheduler->allProcesses[i];
+    printf("%d\t%d\t%d\t%d\t%d\t%d\t\t%d\t\t", process.pid, process.ppid, process.start, process.end, process.status, process.processedTU, process.service);
+    for (int j = 1 ; j <= process.diskRequests[0] ; j++) {
+      printf("%d ", process.diskRequests[j]);
+    }
+    printf("\t\t");
+    for (int j = 1 ; j <= process.tapeRequests[0] ; j++) {
+      printf("%d ", process.tapeRequests[j]);
+    }
+    printf("\t\t");
+    for (int j = 1 ; j <= process.printerRequests[0] ; j++) {
+      printf("%d ", process.printerRequests[j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  printf("Alta prioridade: ");
+  printQueue(scheduler->highPriority);
+  printf("\n");
+  printf("Baixa prioridade: ");
+  printQueue(scheduler->lowPriority);
+  printf("\n");
+  printf("Fila Disco: ");
+  printQueue(scheduler->diskQueue);
+  printf("\n");
+  printf("Fila Fita: ");
+  printQueue(scheduler->tapeQueue);
+  printf("\n");
+  printf("Fila Impressora: ");
+  printQueue(scheduler->printerQueue);
+  printf("\n");
+}
+
 void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
+  printScheduler(scheduler);
   while(unfinishedProcessesExist(scheduler)){
     getchar();
     updateScheduler(scheduler);
     scheduler->programCounter++;
+    printScheduler(scheduler);
   }
 }
 
