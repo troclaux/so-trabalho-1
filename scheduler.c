@@ -99,14 +99,19 @@ void processIOQueue(Scheduler *scheduler) {
 }
 
 void updateRunningProcess(Scheduler *scheduler) {
+  Process *process;
   if (!isEmpty(scheduler->highPriority)){
     //computa os processos de alta prioridade
     //desempilha highpriority e define o running process como o processo desempilhado 
     scheduler->runningProcessPID = dequeue(scheduler->highPriority);
+    process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
+    process->status = 1;
   }
   else if (!isEmpty(scheduler->lowPriority)){
     //computa processos de baixa prioridade
     scheduler->runningProcessPID = dequeue(scheduler->lowPriority);
+    process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
+    process->status = 1;
   }
 }
 
@@ -144,6 +149,7 @@ void updateScheduler(Scheduler *scheduler) {
 
     //checa se precisa fazer preempcao
     if (scheduler->quantumChecker == scheduler->quantum) {
+      process->status = 0;
       scheduler->quantumChecker = 0;
       enqueue(scheduler->lowPriority, process->pid);
     }
