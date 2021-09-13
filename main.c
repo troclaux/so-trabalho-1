@@ -33,7 +33,7 @@ int main() {
   srand((time(NULL)*seed)); // should be called just once on the entire code base
   Scheduler scheduler;
   Process *processes;
-  int numProcessos = 1;
+  int numProcessos = 20;
 
   processes = (Process *)calloc(numProcessos,sizeof(Process));
 
@@ -41,7 +41,7 @@ int main() {
     processes[i] = newProcess(i + 100,1);
   }
 
-  scheduler = newScheduler(4, numProcessos, processes, 2, 3, 4);
+  scheduler = newScheduler(5, numProcessos, processes, 2, 3, 4);
   computeExecutionCycles(&scheduler, processes);
   free(processes);
   killScheduler(&scheduler);

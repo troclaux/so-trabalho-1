@@ -59,12 +59,6 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
   return scheduler;
 }
 
-/* void preempt(Scheduler *schedule, int pid){
-  int process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcess);
-
-  return;
-} */
-
 void processIOQueue(Scheduler *scheduler) {
   int processPid;
   if(!isEmpty(scheduler->diskQueue)) {
@@ -106,12 +100,16 @@ void updateRunningProcess(Scheduler *scheduler) {
     scheduler->runningProcessPID = dequeue(scheduler->highPriority);
     process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
     process->status = 1;
+    process->processedTU++;
+    scheduler->quantumChecker++;
   }
   else if (!isEmpty(scheduler->lowPriority)){
     //computa processos de baixa prioridade
     scheduler->runningProcessPID = dequeue(scheduler->lowPriority);
     process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
     process->status = 1;
+    process->processedTU++;
+    scheduler->quantumChecker++;
   }
 }
 
@@ -131,34 +129,47 @@ void updateScheduler(Scheduler *scheduler) {
   if(scheduler->runningProcessPID) {
     //começo
     process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
-    process->processedTU++;
-    scheduler->quantumChecker++;
     if(process->processedTU == process->service){
       process->finished = true;
+      process->end = scheduler->programCounter;
+      process->status = 0;
+      scheduler->quantumChecker = 0;
+      scheduler->runningProcessPID = 0;
       updateRunningProcess(scheduler);
     } else if (checkIntInArray(process->processedTU, process->diskRequests)) {
       enqueue(scheduler->diskQueue, process->pid);
+      process->status = 0;
+      scheduler->quantumChecker = 0;
+      scheduler->runningProcessPID = 0;
       updateRunningProcess(scheduler);
     } else if (checkIntInArray(process->processedTU, process->tapeRequests)) {
       enqueue(scheduler->tapeQueue, process->pid);
+      process->status = 0;
+      scheduler->quantumChecker = 0;
+      scheduler->runningProcessPID = 0;
       updateRunningProcess(scheduler);
     } else if (checkIntInArray(process->processedTU, process->printerRequests)) {
       enqueue(scheduler->printerQueue, process->pid);
-      updateRunningProcess(scheduler);
-    }
-
-    //checa se precisa fazer preempcao
-    if (scheduler->quantumChecker == scheduler->quantum) {
       process->status = 0;
       scheduler->quantumChecker = 0;
+      scheduler->runningProcessPID = 0;
+      updateRunningProcess(scheduler);
+    } else if (scheduler->quantumChecker == scheduler->quantum) { //checa se precisa fazer preempcao
+      process->status = 0;
+      scheduler->quantumChecker = 0;
+      scheduler->runningProcessPID = 0;
       enqueue(scheduler->lowPriority, process->pid);
+      updateRunningProcess(scheduler);
+    } else {
+      process->processedTU++;
+      scheduler->quantumChecker++;
     }
+
   //se nao estiver computando
   } else {
     updateRunningProcess(scheduler);
   }
 }
-
 
 bool unfinishedProcessesExist(Scheduler *scheduler){
   for(int i = 0 ; i < scheduler->numberOfProcesses ; i++){
@@ -170,22 +181,41 @@ bool unfinishedProcessesExist(Scheduler *scheduler){
 }
 
 void printScheduler(Scheduler *scheduler) {
+  int i, j;
   Process process;
   printf("\e[1;1H\e[2J");
   printf("U.T.: %d\n", scheduler->programCounter);
+  printf("Quantum: %d\n", scheduler->quantum);
   printf("PID\tPPID\tStart\tEnd\tStatus\tProcessedTU\tService\t\tDisk\t\tTape\t\tPrinter\n");
-  for (int i = 0 ; i < scheduler->numberOfProcesses ; i++) {
+  for (i = 0 ; i < scheduler->numberOfProcesses ; i++) {
     process = scheduler->allProcesses[i];
     printf("%d\t%d\t%d\t%d\t%d\t%d\t\t%d\t\t", process.pid, process.ppid, process.start, process.end, process.status, process.processedTU, process.service);
-    for (int j = 1 ; j <= process.diskRequests[0] ; j++) {
+    for (j = 1 ; j <= process.diskRequests[0] ; j++) {
+      if (process.diskRequests[j] < 10) {
+        printf("0");
+      }
       printf("%d ", process.diskRequests[j]);
     }
-    printf("\t\t");
-    for (int j = 1 ; j <= process.tapeRequests[0] ; j++) {
+    if (process.diskRequests[0] > 2) {
+      printf("\t");
+    } else {
+      printf("\t\t");
+    }
+    for (j = 1 ; j <= process.tapeRequests[0] ; j++) {
+      if (process.tapeRequests[j] < 10) {
+        printf("0");
+      }
       printf("%d ", process.tapeRequests[j]);
     }
-    printf("\t\t");
-    for (int j = 1 ; j <= process.printerRequests[0] ; j++) {
+    if (process.tapeRequests[0] > 2) {
+      printf("\t");
+    } else {
+      printf("\t\t");
+    }
+    for (j = 1 ; j <= process.printerRequests[0] ; j++) {
+      if (process.printerRequests[j] < 10) {
+        printf("0");
+      }
       printf("%d ", process.printerRequests[j]);
     }
     printf("\n");
@@ -205,7 +235,8 @@ void printScheduler(Scheduler *scheduler) {
   printf("\n");
   printf("Fila Impressora: ");
   printQueue(scheduler->printerQueue);
-  printf("\n");
+  printf("\n\n");
+  printf("Contador Quantum: %d\n", scheduler->quantumChecker);
 }
 
 void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
@@ -216,6 +247,7 @@ void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
     scheduler->programCounter++;
     printScheduler(scheduler);
   }
+  printScheduler(scheduler);
 }
 
 void killScheduler(Scheduler *scheduler) {
