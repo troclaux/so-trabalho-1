@@ -22,7 +22,7 @@ int main() {
     scanf("%d", &numProcessos);
   }
 
-  printf("Insira o quantum desejado para o escalonador:");
+  printf("Insira o quantum desejado para o escalonador: ");
   scanf("%d", &quantum);
 
   processes = (Process *)calloc(numProcessos,sizeof(Process));

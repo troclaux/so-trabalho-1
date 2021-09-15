@@ -72,13 +72,13 @@ Process newProcess(int pid, int ppid) {
   Process process;
   process.pid = pid;
   process.ppid = ppid;
-  process.start = rand() % 45;
+  process.start = rand() % 49 + 1;
   process.end = -1;
   process.processedTU = 0;
 
   process.finished = false;
   process.status = 0;
-  process.service = rand() % 43 + 2;
+  process.service = rand() % 48 + 2;
   process.diskRequests = (int *)calloc(4, sizeof(int));
   process.tapeRequests = (int *)calloc(4, sizeof(int));
   process.printerRequests = (int *)calloc(4, sizeof(int));
