@@ -26,7 +26,6 @@ bool isEmpty(Queue *queue){
   if(queue->size == 0){
     return true;
   }
-
   return false;
 }
 
@@ -61,6 +60,7 @@ int dequeue(Queue *queue) {
   return pid;
 }
 
+//funcao para imprimir elementos na fila
 void printQueue(Queue *queue) {
   int i;
   if (!isEmpty(queue)) {
@@ -73,6 +73,7 @@ void printQueue(Queue *queue) {
   }
 }
 
+//libera memoria alocada
 void killQueue(Queue *queue) {
   free(queue->array);
   free(queue);

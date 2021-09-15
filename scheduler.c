@@ -6,25 +6,25 @@
 typedef struct{
   int numberOfProcesses;
   Process* allProcesses;
-  Queue* highPriority;
-  Queue* lowPriority;
-  Queue* diskQueue;
-  int diskQuantum;
+  Queue* highPriority;  //fila de alta prioridade
+  Queue* lowPriority;  //fila de baixa prioridade
+  Queue* diskQueue; 
+  int diskQuantum;  //duracao de operacao de entrada e saida para disco
   Queue* tapeQueue;
-  int tapeQuantum;
+  int tapeQuantum; //duracao de operacao de entrada e saida para fita
   Queue* printerQueue;
-  int printerQuantum;
+  int printerQuantum;  //duracao de operacao de entrada e saida para impressora
   int quantum;
-  int quantumChecker;
-  int programCounter;
-  int runningProcessPID;
-  int diskCount;
+  int quantumChecker;  //contador de quantas UT consecutivas o processo tem computado
+  int programCounter;  //tempo atual do escalonador
+  int runningProcessPID;  //pid do processo que tem acesso ao CPU
+  int diskCount;  //contador de quantas UT ja foram utilizadas pela operacao de IO do disco
   int tapeCount;
   int printerCount;
 } Scheduler;
 
 
-Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses, unsigned diskQuantum, unsigned tapeQuantum, unsigned printerQuantum){
+Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses, int diskQuantum, int tapeQuantum, int printerQuantum){
   Scheduler scheduler;
   scheduler.quantum = quantum;
   scheduler.numberOfProcesses = numberOfProcesses;
@@ -34,27 +34,14 @@ Scheduler newScheduler(int quantum, int numberOfProcesses, Process* allProcesses
   scheduler.diskQueue = newQueue(numberOfProcesses);
   scheduler.tapeQueue = newQueue(numberOfProcesses);
   scheduler.printerQueue = newQueue(numberOfProcesses);
-  scheduler.programCounter = 0;
-  scheduler.runningProcessPID = 0;
-  scheduler.diskCount = 0;
+  scheduler.programCounter = 0; //indica o instante de tempo atual da simulacao
+  scheduler.runningProcessPID = 0; //pid do processo que esta sendo processado
+  scheduler.diskCount = 0; 
   scheduler.tapeCount = 0;
   scheduler.printerCount = 0;
-  
-  if (diskQuantum == 0) {
-    scheduler.diskQuantum = (rand() % 5) + 2;
-  } else {
-    scheduler.diskQuantum = diskQuantum;
-  }
-  if (tapeQuantum == 0) {
-    scheduler.tapeQuantum = (rand() % 5) + 2;
-  } else {
-    scheduler.tapeQuantum = tapeQuantum;
-  }
-  if (printerQuantum == 0) {
-    scheduler.printerQuantum = (rand() % 5) + 2;
-  } else {
-    scheduler.printerQuantum = printerQuantum;
-  }
+  scheduler.diskQuantum = diskQuantum;
+  scheduler.tapeQuantum = tapeQuantum;
+  scheduler.printerQuantum = printerQuantum;
 
   return scheduler;
 }
@@ -121,14 +108,16 @@ void updateScheduler(Scheduler *scheduler) {
 
     process = getProcessByPID(scheduler->allProcesses[i].pid, scheduler->allProcesses, scheduler->numberOfProcesses);
 
+    //adiciona um processo na pilha se chegou o tempo de inicio dele
     if(process->start == scheduler->programCounter){
       enqueue(scheduler->highPriority, process->pid);
     }
   }
-  //se o escalonador já tem algum processo computando
+
+  //checa se o escalonador já tem algum processo computando
   if(scheduler->runningProcessPID) {
-    //começo
     process = getProcessByPID(scheduler->runningProcessPID, scheduler->allProcesses, scheduler->numberOfProcesses);
+    //se o processo ja foi completamente processado, encerra ele
     if(process->processedTU == process->service){
       process->finished = true;
       process->end = scheduler->programCounter;
@@ -136,6 +125,7 @@ void updateScheduler(Scheduler *scheduler) {
       scheduler->quantumChecker = 0;
       scheduler->runningProcessPID = 0;
       updateRunningProcess(scheduler);
+    //checa se existe alguma operacao de entrada e saida que precisa ser iniciada
     } else if (checkIntInArray(process->processedTU, process->diskRequests)) {
       enqueue(scheduler->diskQueue, process->pid);
       process->status = 0;
@@ -154,7 +144,8 @@ void updateScheduler(Scheduler *scheduler) {
       scheduler->quantumChecker = 0;
       scheduler->runningProcessPID = 0;
       updateRunningProcess(scheduler);
-    } else if (scheduler->quantumChecker == scheduler->quantum) { //checa se precisa fazer preempcao
+    //checa se precisa fazer preempcao
+    } else if (scheduler->quantumChecker == scheduler->quantum) { 
       process->status = 0;
       scheduler->quantumChecker = 0;
       scheduler->runningProcessPID = 0;
@@ -165,7 +156,6 @@ void updateScheduler(Scheduler *scheduler) {
       scheduler->quantumChecker++;
     }
 
-  //se nao estiver computando
   } else {
     updateRunningProcess(scheduler);
   }
@@ -186,6 +176,9 @@ void printScheduler(Scheduler *scheduler) {
   printf("\e[1;1H\e[2J");
   printf("U.T.: %d\n", scheduler->programCounter);
   printf("Quantum: %d\n", scheduler->quantum);
+  printf("Tempo de serviço para disco: %d\n", scheduler->diskQuantum);
+  printf("Tempo de serviço para fita magnética: %d\n", scheduler->tapeQuantum);
+  printf("Tempo de serviço para impressora: %d\n", scheduler->printerQuantum);
   printf("PID\tPPID\tStart\tEnd\tStatus\tProcessedTU\tService\t\tDisk\t\tTape\t\tPrinter\n");
   for (i = 0 ; i < scheduler->numberOfProcesses ; i++) {
     process = scheduler->allProcesses[i];
@@ -235,8 +228,7 @@ void printScheduler(Scheduler *scheduler) {
   printf("\n");
   printf("Fila Impressora: ");
   printQueue(scheduler->printerQueue);
-  printf("\n\n");
-  printf("Contador Quantum: %d\n", scheduler->quantumChecker);
+  printf("\n");
 }
 
 void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
@@ -250,6 +242,7 @@ void computeExecutionCycles(Scheduler *scheduler, Process* allProcesses){
   printScheduler(scheduler);
 }
 
+//libera memoria alocada para o escalonador
 void killScheduler(Scheduler *scheduler) {
   int i;
   for (i = 0 ; i < scheduler->numberOfProcesses ; i++) {

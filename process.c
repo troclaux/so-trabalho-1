@@ -6,12 +6,12 @@
 typedef struct{
   int pid;
   int ppid;
-  int start;
-  int end;
-  int status;
-  int processedTU;
-  int service;
-  int *diskRequests;
+  int start; //tempo em que o processo pede para ter acesso ao CPU
+  int end;  //tempo em que o processo terminou de ser computado
+  int status;  //diz se o processo esta sendo computado pelo CPU ou não
+  int service;  //tempo necessario para computar completamente esse processo
+  int processedTU;  //unidades de tempo que ja foram computadas do processo ate o momento atual
+  int *diskRequests;  //requisicoes dos io's
   int *tapeRequests;
   int *printerRequests;
   bool finished;
@@ -28,6 +28,7 @@ bool checkIntInArray(int number, int *array) {
   return false;
 }
 
+//funcao para definir a duracao das operacoes de entrar e saida aleatoriamente
 int *generateIOTime(int serviceTime, int *IOArray1, int *IOArray2) {
   if (serviceTime == 0) {
     return NULL;
@@ -88,75 +89,14 @@ Process newProcess(int pid, int ppid) {
   return process;
 }
 
-void printProcess(Process process) {
-  int sizePrinterRequests, sizeTapeRequests, sizeDiskRequests, i;
-  if (process.diskRequests != NULL) {
-    sizeDiskRequests = process.diskRequests[0];
-  } else {
-    sizeDiskRequests = 0;
-  }
-  if (process.tapeRequests != NULL) {
-    sizeTapeRequests = process.tapeRequests[0];
-  } else {
-    sizeTapeRequests = 0;
-  }
-  if (process.printerRequests != NULL) {
-    sizePrinterRequests = process.printerRequests[0];
-  } else {
-    sizePrinterRequests = 0;
-  }
-  printf("PID: %d | ", process.pid);
-  printf("PPID: %d | ", process.ppid);
-  printf("status: %d | ", process.status);
-  printf("start: %d | ", process.start);
-  printf("end: %d | ", process.end);
-  printf("processeTU: %d | ", process.processedTU);
-  printf("service: %d | ", process.service);
-  if (sizeDiskRequests > 0) {
-    printf("disk: ");
-    printf("[%d]: ", sizeDiskRequests);
-    for(i = 1 ; i <= sizeDiskRequests ; i++){
-      if (i == sizeDiskRequests) {
-        printf("%d", process.diskRequests[i]);
-      } else {
-        printf("%d, ", process.diskRequests[i]);
-      }
-    }
-    printf(" | ");
-  }
-  if (sizePrinterRequests > 0) {
-    printf("printer: ");
-    printf("[%d]: ", sizePrinterRequests);
-    for(i = 1 ; i <= sizePrinterRequests ; i++){
-      if (i == sizePrinterRequests) {
-        printf("%d", process.printerRequests[i]);
-      } else {
-        printf("%d, ", process.printerRequests[i]);
-      }
-    }
-    printf(" | ");
-  }
-  if (sizeTapeRequests > 0) {
-    printf("tape: ");
-    printf("[%d]: ", sizeTapeRequests);
-    for(i = 1 ; i <= sizeTapeRequests ; i++){
-      if (i == sizeTapeRequests) {
-        printf("%d", process.tapeRequests[i]);
-      } else {
-        printf("%d, ", process.tapeRequests[i]);
-      }
-    }
-    printf(" |");
-  }
-  printf("\n");
-}
-
+//funcao para liberar a memoria alocada para as requisicoes das operacoes de entrada e saida
 void killProcess(Process *process) {
   free(process->diskRequests);
   free(process->tapeRequests);
   free(process->printerRequests);
 }
 
+//funcao que vai retornar o endereco de um processo especifico em uma fila de processos
 Process *getProcessByPID(int pid, Process *processes, int size){
   for (int i = 0; i < size; i++){
     if (processes[i].pid == pid){
